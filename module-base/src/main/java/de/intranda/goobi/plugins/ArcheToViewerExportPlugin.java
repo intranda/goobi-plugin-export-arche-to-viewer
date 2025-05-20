@@ -33,10 +33,10 @@ import ugh.exceptions.WriteException;
 
 @PluginImplementation
 @Log4j2
-public class KickStartExportPlugin implements IExportPlugin, IPlugin {
+public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
 
     @Getter
-    private String title = "intranda_export_kick_start";
+    private String title = "intranda_export_arche_to_viewer";
     @Getter
     private PluginType type = PluginType.Export;
     @Getter

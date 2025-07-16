@@ -46,8 +46,10 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
 
     @Getter
     private String title = "intranda_export_arche_to_viewer";
+
     @Getter
     private PluginType type = PluginType.Export;
+
     @Getter
     @Setter
     private Step step;

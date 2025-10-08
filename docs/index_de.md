@@ -1,12 +1,13 @@
 ---
-title: Export der ARCHE Daten in den viewer
+title: Export der ARCHE-Daten in den Goobi viewer
 identifier: intranda_export_arche_to_viewer
-description: Export Plugin für zum Export der ARCHE Daten in den viewer
-published: false
+description: Export Plugin für zum Export der ARCHE-Daten in den Goobi viewer
+published: true
 ---
 
 ## Einführung
-Diese Dokumentation erläutert das Plugin für zum Export der ARCHE Daten in den viewer.
+Diese Dokumentation erläutert das Plugin für zum Export der ARCHE Daten in den Goobi viewer.
+
 
 ## Installation
 Um das Plugin nutzen zu können, muss folgende Datei installiert werden:
@@ -27,42 +28,41 @@ Für die Verwendung des Plugins muss dieses in einem Arbeitsschritt ausgewählt 
 
 
 ## Überblick und Funktionsweise
-
-Vorraussetzung für den Export ist der ingest des Vorgangs in ARCHE.
+Vorraussetzung für den Export ist der Ingest des Vorgangs in ARCHE.
 
 Startet man den Export, wird zuerst nach der TopCollection des Projekts und der Collection-Resource für den Vorgang in ARCHE gesucht. Beide Datensätze müssen existieren, sonst kann der Vorgang nicht exportiert werden.
 
-Anschließend werden die folder und file Resourcen mit den Daten aus dem Dateisystem verglichen. Wenn alle Bilder und ALTO Dateien auch in ARCHE existieren, wird mit dem Export fortgefahren. 
+Anschließend werden die `folder` und `file` Resourcen mit den Daten aus dem Dateisystem verglichen. Wenn alle Bilder und ALTO-Dateien auch in ARCHE existieren, wird mit dem Export fortgefahren. 
 
-Dabei wird eine METS/MODS Datei erzeugt, die sich in einigen Punkten vom Standard-Export unterscheidet. Zum einen werden keine Bilder oder OCR Daten exportiert und zum anderen unterschieden sich die fileGroups. 
+Dabei wird eine `METS/MODS`-Datei erzeugt, die sich in einigen Punkten vom Standard-Export unterscheidet. Zum einen werden keine Bilder oder OCR-Daten exportiert und zum anderen unterschieden sich die `fileGroups`. 
 
 Bei allen Aufrufen ist gegebenfalls eine Authentifizierung notwendig, falls die ARCHE API entsprechend konfiguriert wurde.
 
 ### ALTO
 
-Bei Dateigruppen mit dem Namen `ALTO` oder `FULLTEXT` wird auf die XML Datei in ARCHE verwiesen:
+Bei Dateigruppen mit dem Namen `ALTO` oder `FULLTEXT` wird auf die XML-Datei in ARCHE verwiesen:
 
 ```xml
-    <mets:fileGrp USE="FULLTEXT">
-      <mets:file ID="FILE_0001_FULLTEXT" MIMETYPE="application/xml">
-        <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_ocr/00000001.xml" xlink:type="simple" />
-      </mets:file>
-      <mets:file ID="FILE_0002_FULLTEXT" MIMETYPE="application/xml">
-        <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_ocr/00000002.xml" xlink:type="simple" />
-      </mets:file>
-    </mets:fileGrp>
+<mets:fileGrp USE="FULLTEXT">
+  <mets:file ID="FILE_0001_FULLTEXT" MIMETYPE="application/xml">
+    <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_ocr/00000001.xml" xlink:type="simple" />
+  </mets:file>
+  <mets:file ID="FILE_0002_FULLTEXT" MIMETYPE="application/xml">
+    <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_ocr/00000002.xml" xlink:type="simple" />
+  </mets:file>
+</mets:fileGrp>
 ```
 
 Diese URL leitet direkt auf das entsprechende Binary in ARCHE weiter:
 
 http://127.0.0.1/api/10172
 
-Sollten weiter Informationen wie Dateigröße, MimeType, Dateiname benötigt werden, können sie durch einen Aufruf der */metadata* resource erlangt werden:
+Sollten weiter Informationen wie Dateigröße, MimeType, Dateiname benötigt werden, können sie durch einen Aufruf der `/metadata` Resource erlangt werden:
 
 http://127.0.0.1/api/10172/metadata
 
 
-```ttl
+```
 @prefix n0: <http://127.0.0.1/api/>.
 
 @prefix n1: <https://vocabs.acdh.oeaw.ac.at/schema#>.
@@ -99,37 +99,41 @@ http://127.0.0.1/api/10172/metadata
 
 ### Thumbnails
 
+Die Thumbnails werden wie folgt aufgeführt:
+
 ```xml
-    <mets:fileGrp USE="THUMBS">
-      <mets:file ID="FILE_0001_THUMBS" MIMETYPE="image/png">
-        <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_media/00000001.jpg?format=thumbnail" xlink:type="simple" />
-      </mets:file>
-      <mets:file ID="FILE_0002_THUMBS" MIMETYPE="image/png">
-        <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_media/00000002.jpg?format=thumbnail" xlink:type="simple" />
-      </mets:file>
-    </mets:fileGrp>
+<mets:fileGrp USE="THUMBS">
+  <mets:file ID="FILE_0001_THUMBS" MIMETYPE="image/png">
+    <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_media/00000001.jpg?format=thumbnail" xlink:type="simple" />
+  </mets:file>
+  <mets:file ID="FILE_0002_THUMBS" MIMETYPE="image/png">
+    <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_media/00000002.jpg?format=thumbnail" xlink:type="simple" />
+  </mets:file>
+</mets:fileGrp>
 ```
 
-URLs von Dateigruppen mit der Bezeichnung `THUMBS`, `THUMBNAIL` oder `THUMBNAILS` leiten auf den ARCHE Imageserver weiter, der die Daten immer als PNG ausliefert:
+URLs von Dateigruppen mit der Bezeichnung `THUMBS`, `THUMBNAIL` oder `THUMBNAILS` leiten auf den ARCHE-Imageserver weiter, der die Daten immer als PNG ausliefert:
 
 https://arche-thumbnails.acdh.oeaw.ac.at/?id=http%3A%2F%2F127.0.0.1%2Fapi%2F10115&width=100&height=100
 
 
 ### Bilder
 
+Die Bilder werden in der METS-Datei so ausgewiesen:
+
 ```xml
-    <mets:fileGrp USE="PRESENTATION">
-      <mets:file ID="FILE_0001_PRESENTATION" MIMETYPE="image/jpeg">
-        <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_media/00000001.jpg?format=image%2Fjpeg" xlink:type="simple" />
-      </mets:file>
-      <mets:file ID="FILE_0002_PRESENTATION" MIMETYPE="image/jpeg">
-        <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_media/00000002.jpg?format=image%2Fjpeg" xlink:type="simple" />
-      </mets:file>
-    </mets:fileGrp>
+<mets:fileGrp USE="PRESENTATION">
+  <mets:file ID="FILE_0001_PRESENTATION" MIMETYPE="image/jpeg">
+    <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_media/00000001.jpg?format=image%2Fjpeg" xlink:type="simple" />
+  </mets:file>
+  <mets:file ID="FILE_0002_PRESENTATION" MIMETYPE="image/jpeg">
+    <mets:FLocat LOCTYPE="URL" xlink:href="https://id.acdh.oeaw.ac.at/Archive_Project/bergsphi_625017145/bergsphi_625017145_media/00000002.jpg?format=image%2Fjpeg" xlink:type="simple" />
+  </mets:file>
+</mets:fileGrp>
 ```
     
 Die Dateigruppen `PRESENTATION` oder `DEFAULT` enthalten URLs, die auf den ARCHE IIIF Image Server weiterleiten:
 
- https://loris.acdh.oeaw.ac.at/10115/full/full/0/default.jpeg
+https://loris.acdh.oeaw.ac.at/10115/full/full/0/default.jpeg
 
 

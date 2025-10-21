@@ -3,6 +3,10 @@ title: Export der ARCHE-Daten in den Goobi viewer
 identifier: intranda_export_arche_to_viewer
 description: Export Plugin für zum Export der ARCHE-Daten in den Goobi viewer
 published: true
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Export Plugin
 ---
 
 ## Einführung

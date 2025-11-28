@@ -93,11 +93,11 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
         String processIdentifier = null;
         String mediaFolderIdentifier = null;
         String ocrFolderIdentifier = null;
-        try (Client client = ArcheAPI.getClient(archeConfiguration.getArcheUserName(), archeConfiguration.getArchePassword())) {
+        try (Client client = ArcheAPI.getClient(archeConfiguration.getArcheUserName(true), archeConfiguration.getArchePassword(true))) {
 
             projectIdentifier = idPrefix + process.getProjekt().getTitel();
 
-            String resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(), projectIdentifier);
+            String resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(true), projectIdentifier);
             if (StringUtils.isBlank(resourceUri)) {
                 problems.add("Project was not exported to Arche.");
                 return false;
@@ -105,7 +105,7 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
 
             processIdentifier = projectIdentifier + "/" + process.getTitel();
 
-            resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(), processIdentifier);
+            resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(true), processIdentifier);
             if (StringUtils.isBlank(resourceUri)) {
                 problems.add("Process was not exported to Arche.");
                 return false;
@@ -116,7 +116,7 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
 
             for (String filename : StorageProvider.getInstance().list(process.getImagesTifDirectory(false))) {
                 String imageIdentifier = mediaFolderIdentifier + filename;
-                resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(), imageIdentifier);
+                resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(true), imageIdentifier);
                 if (StringUtils.isBlank(resourceUri)) {
                     problems.add("Image " + filename + " was not exported to Arche.");
                     return false;
@@ -126,7 +126,7 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
 
             for (String filename : StorageProvider.getInstance().list(process.getOcrAltoDirectory())) {
                 String ocrIdentifier = ocrFolderIdentifier + filename;
-                resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(), ocrIdentifier);
+                resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(true), ocrIdentifier);
                 if (StringUtils.isBlank(resourceUri)) {
                     problems.add("ALTO file " + filename + " was not exported to Arche.");
                     return false;

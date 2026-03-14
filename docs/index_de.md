@@ -32,15 +32,15 @@ Für die Verwendung des Plugins muss dieses in einem Arbeitsschritt ausgewählt 
 
 
 ## Überblick und Funktionsweise
-Vorraussetzung für den Export ist der Ingest des Vorgangs in ARCHE.
+Voraussetzung für den Export ist der Ingest des Vorgangs in ARCHE.
 
 Startet man den Export, wird zuerst nach der TopCollection des Projekts und der Collection-Resource für den Vorgang in ARCHE gesucht. Beide Datensätze müssen existieren, sonst kann der Vorgang nicht exportiert werden.
 
-Anschließend werden die `folder` und `file` Resourcen mit den Daten aus dem Dateisystem verglichen. Wenn alle Bilder und ALTO-Dateien auch in ARCHE existieren, wird mit dem Export fortgefahren. 
+Anschließend werden die `folder` und `file` Ressourcen mit den Daten aus dem Dateisystem verglichen. Wenn alle Bilder und ALTO-Dateien auch in ARCHE existieren, wird mit dem Export fortgefahren. 
 
 Dabei wird eine `METS/MODS`-Datei erzeugt, die sich in einigen Punkten vom Standard-Export unterscheidet. Zum einen werden keine Bilder oder OCR-Daten exportiert und zum anderen unterschieden sich die `fileGroups`. 
 
-Bei allen Aufrufen ist gegebenfalls eine Authentifizierung notwendig, falls die ARCHE API entsprechend konfiguriert wurde.
+Bei allen Aufrufen ist gegebenenfalls eine Authentifizierung notwendig, falls die ARCHE API entsprechend konfiguriert wurde.
 
 ### ALTO
 

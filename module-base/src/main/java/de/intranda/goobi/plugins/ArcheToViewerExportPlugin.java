@@ -3,9 +3,11 @@ package de.intranda.goobi.plugins;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.goobi.api.ArcheConfiguration;
 import org.goobi.api.rest.ArcheAPI;
@@ -58,6 +60,7 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
     private List<String> problems;
 
     private ArcheConfiguration archeConfiguration;
+    private DecimalFormat counterFormat = new DecimalFormat("0000");
 
     private static final Namespace metsNamespace = Namespace.getNamespace("mets", "http://www.loc.gov/METS/");
     private static final Namespace modsNamespace = Namespace.getNamespace("mods", "http://www.loc.gov/mods/v3");
@@ -88,16 +91,19 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
 
         // first validate if project, process, files are ingested into arche instance
         archeConfiguration = new ArcheConfiguration("intranda_administration_arche_project_export");
-        String idPrefix = archeConfiguration.getIdentifierPrefix();
         String projectIdentifier = null;
         String processIdentifier = null;
         String mediaFolderIdentifier = null;
         String ocrFolderIdentifier = null;
-        try (Client client = ArcheAPI.getClient(archeConfiguration.getArcheUserName(true), archeConfiguration.getArchePassword(true))) {
+        try (Client client = ArcheAPI.getClient(archeConfiguration.getArcheUserName(), archeConfiguration.getArchePassword())) {
+            if (StringUtils.isNotBlank(process.getProjekt().getProjectIdentifier())) {
+                projectIdentifier =
+                        archeConfiguration.getIdentifierPrefix() + process.getProjekt().getProjectIdentifier().replace(" ", "_");
+            } else {
+                projectIdentifier = archeConfiguration.getIdentifierPrefix() + process.getProjekt().getTitel().replace(" ", "_");
+            }
 
-            projectIdentifier = idPrefix + process.getProjekt().getTitel();
-
-            String resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(true), projectIdentifier);
+            String resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(), projectIdentifier);
             if (StringUtils.isBlank(resourceUri)) {
                 problems.add("Project was not exported to Arche.");
                 return false;
@@ -105,7 +111,7 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
 
             processIdentifier = projectIdentifier + "/" + process.getTitel();
 
-            resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(true), processIdentifier);
+            resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(), processIdentifier);
             if (StringUtils.isBlank(resourceUri)) {
                 problems.add("Process was not exported to Arche.");
                 return false;
@@ -113,20 +119,24 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
 
             mediaFolderIdentifier = processIdentifier + "/" + process.getTitel() + "_media/";
             ocrFolderIdentifier = processIdentifier + "/" + process.getTitel() + "_ocr/";
-
+            int imageNumber = 1;
             for (String filename : StorageProvider.getInstance().list(process.getImagesTifDirectory(false))) {
-                String imageIdentifier = mediaFolderIdentifier + filename;
-                resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(true), imageIdentifier);
+                String imageIdentifier =
+                        mediaFolderIdentifier + createImageFilename(process.getTitel() + "_media", imageNumber, FilenameUtils.getExtension(filename));
+
+                imageNumber++;
+                resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(), imageIdentifier);
                 if (StringUtils.isBlank(resourceUri)) {
                     problems.add("Image " + filename + " was not exported to Arche.");
                     return false;
                 }
 
             }
-
+            imageNumber = 1;
             for (String filename : StorageProvider.getInstance().list(process.getOcrAltoDirectory())) {
-                String ocrIdentifier = ocrFolderIdentifier + filename;
-                resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(true), ocrIdentifier);
+                String ocrIdentifier = ocrFolderIdentifier +
+                        createImageFilename(process.getTitel() + "_ocr", imageNumber, FilenameUtils.getExtension(filename));
+                resourceUri = ArcheAPI.findResourceURI(client, archeConfiguration.getArcheApiUrl(), ocrIdentifier);
                 if (StringUtils.isBlank(resourceUri)) {
                     problems.add("ALTO file " + filename + " was not exported to Arche.");
                     return false;
@@ -174,26 +184,31 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
         for (Element fileGrp : fileSec.getChildren("fileGrp", metsNamespace)) {
             String name = fileGrp.getAttributeValue("USE");
             List<Element> filesInGrp = fileGrp.getChildren("file", metsNamespace);
+            int imageNumber = 1;
             for (Element fileElement : filesInGrp) {
                 Element flocat = fileElement.getChild("FLocat", metsNamespace);
                 flocat.setAttribute("type", "simple", xlinkNamespace);
-                String filename = Paths.get(flocat.getAttributeValue("href", xlinkNamespace)).getFileName().toString();
 
+                String filename = Paths.get(flocat.getAttributeValue("href", xlinkNamespace)).getFileName().toString();
+                String currentFilename =
+                        createImageFilename(process.getTitel() + "_media", imageNumber, FilenameUtils.getExtension(filename));
                 switch (name.toLowerCase()) {
                     case "presentation", "default":
-                        flocat.setAttribute("href", mediaFolderIdentifier + filename + "?format=image%2Fjpeg", xlinkNamespace);
+                        flocat.setAttribute("href", mediaFolderIdentifier + currentFilename + "?format=image%2Fjpeg", xlinkNamespace);
                         fileElement.setAttribute("MIMETYPE", "image/jpeg");
                         break;
                     case "thumbs", "thumbnail", "thumbnails":
-                        flocat.setAttribute("href", mediaFolderIdentifier + filename + "?format=thumbnail", xlinkNamespace);
+                        flocat.setAttribute("href", mediaFolderIdentifier + currentFilename + "?format=thumbnail", xlinkNamespace);
                         fileElement.setAttribute("MIMETYPE", "image/png");
                         break;
                     case "alto", "fulltext":
-                        flocat.setAttribute("href", ocrFolderIdentifier + filename, xlinkNamespace);
+                        String altoFilename =
+                                createImageFilename(process.getTitel() + "_ocr", imageNumber, FilenameUtils.getExtension(filename));
+                        flocat.setAttribute("href", ocrFolderIdentifier + altoFilename, xlinkNamespace);
                         fileElement.setAttribute("MIMETYPE", "application/xml");
                         break;
                 }
-
+                imageNumber++;
             }
         }
 
@@ -208,6 +223,13 @@ public class ArcheToViewerExportPlugin implements IExportPlugin, IPlugin {
             StorageProvider.getInstance().move(anchorfile, Paths.get(destination, anchorfile.getFileName().toString()));
         }
         return success;
+    }
+
+    private String createImageFilename(String foldername, int counter, String extension) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(foldername).append("_").append(counterFormat.format(counter)).append(".").append(extension);
+
+        return builder.toString();
     }
 
 }
